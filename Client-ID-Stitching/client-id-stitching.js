@@ -1,29 +1,21 @@
 cr.api(page => {
-  const gaGoals = ['click', 'order', 'follow'] /* Действия целей, через запятую */
+  const gm = '_ga', y = '_ym_uid'
+  const mid = {gm, y}
 
-  gaGoals.forEach(goal => {
-    page.waitForAppear(`.ga-${goal}`, elem => {
-      const sendButton = elem.querySelector('button[data-action="send"]')
-      const form = sendButton ? elem.closest('.cr-form') : false
+  Object.keys(mid).forEach(key => {
+    mid[key] = document.cookie.match(new RegExp(`(?:^|[^\w])${mid[key]}=(.*?)(?:;|$)`))
+    mid[key] = mid[key] ? decodeURIComponent(mid[key][1]) : undefined
+  })
+  
+  mid.gm = mid.gm ? mid.gm.replace(/[^\.]+\.[^\.]+\.(\d+\.\d)/, '$1') : mid.gm
 
-      if (sendButton && form) {
-        page.getComponent(form).on('submit', () => {
-          sendGAEvent(goal)
-        })
-      }
-      else {
-        elem.addEventListener('click', () => {
-          sendGAEvent(goal)
-        })
-      }
+  page.waitForAppear('.cr-form', form => {
+    page.getComponent(form).on('before-submit', e => {
+      e.fields.push({
+        name: 'Client ID by Google', value: mid.gm, uid: 'Client ID by Google'
+      }, {
+        name: 'ymclid_metrika', value: mid.y, uid: 'ymclid_metrika'
+      })
     })
   })
-
-  function sendGAEvent(goal) {
-    gtag('event', goal, {
-      'event_callback': () => {
-        console.log(`ga action: ${goal}`)
-      }
-    })
-  }
 })

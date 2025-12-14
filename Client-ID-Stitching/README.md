@@ -19,7 +19,7 @@
 
 ### Технологии
 
-* JavaScript, 
+* JavaScript 
 * Creatium API
 
 ### Концепции
